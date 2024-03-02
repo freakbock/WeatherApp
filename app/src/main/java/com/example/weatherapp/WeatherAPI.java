@@ -3,6 +3,7 @@ package com.example.weatherapp;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -26,6 +27,7 @@ public class WeatherAPI {
                 {
                     URL url = new URL(apIUrl);
                     HttpURLConnection urlConnection =(HttpURLConnection) url.openConnection();
+                    urlConnection.setRequestProperty("X-Yandex-API-Key", API);
                     InputStream inputStream = urlConnection.getInputStream();
                     BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
                     StringBuilder stringBuilder = new StringBuilder();
@@ -48,12 +50,55 @@ public class WeatherAPI {
                     try{
                         JSONObject jsonObject = new JSONObject(response);
 
-                        String temperature = jsonObject.getJSONObject("fact").getString("temp");
-                        //get data
+                        String daytime = jsonObject.getJSONObject("fact").getString("daytime");
+                        int temp = jsonObject.getJSONObject("fact").getInt("temp");
+                        String condition = jsonObject.getJSONObject("fact").getString("condition");
+
+
+                        JSONArray forecasts = jsonObject.getJSONArray("forecasts");
+                        MainActivity.weatherDays.clear();
+                        MainActivity.weatherHours.clear();
+                        for(int i = 0; i < forecasts.length(); i++){
+
+                            JSONObject dataForDay = forecasts.getJSONObject(i);
+                            String date = dataForDay.getString("date");
+                            String dayCondition = dataForDay.getJSONObject("parts").getJSONObject("day").getString("condition");
+                            String icon = dataForDay.getJSONObject("parts").getJSONObject("day").getString("icon");
+
+                            JSONObject parts = dataForDay.getJSONObject("parts");
+                            JSONObject night = parts.getJSONObject("night");
+                            JSONObject morning = parts.getJSONObject("night");
+                            JSONObject day = parts.getJSONObject("night");
+                            JSONObject evening = parts.getJSONObject("night");
+                            int temp_avg = (night.getInt("temp_avg")
+                                    + morning.getInt("temp_avg") +
+                                    day.getInt("temp_avg") +
+                                    evening.getInt("temp_avg")) /4;
+
+                            JSONArray Hours = dataForDay.getJSONArray("hours");
+                            for(int j = 0; j < Hours.length(); j++){
+
+                                JSONObject dataForHour = Hours.getJSONObject(j);
+
+                                int hour = dataForHour.getInt("hour");
+                                int hourTemp = dataForHour.getInt("temp");
+                                String hourIcon = dataForHour.getString("icon");
+
+                                WeatherOfHour weatherOfHour = new WeatherOfHour(date, hour, hourTemp, hourIcon);
+                                MainActivity.weatherHours.add(weatherOfHour);
+
+                            }
+
+
+                            WeatherOfDay weatherOfDay = new WeatherOfDay(date, temp_avg, dayCondition, icon);
+                            MainActivity.weatherDays.add(weatherOfDay);
+
+                            callback.onSuccess(temp,condition, daytime);
+                        }
                     }
                     catch (JSONException e){
                         Log.e("WeatherAPI", "Error parsing weather data: " + e.getMessage());
-                        callback.onFailure("Error parsin weather data");
+                        callback.onFailure("Error parsing weather data");
                     }
                 }
                 else{
@@ -63,7 +108,7 @@ public class WeatherAPI {
         }.execute();
     }
     public interface WeatherCallback{
-        void onSuccess(String temperature, String condition);
+        void onSuccess(int temp, String condition, String daytime);
         void onFailure(String errorMessage);
     }
 }

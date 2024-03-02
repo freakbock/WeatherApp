@@ -40,12 +40,39 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <LinearLayout
+            android:id="@+id/menu_days"
             android:layout_width="match_parent"
-            android:layout_height="120dp"
+            android:layout_height="140dp"
             android:layout_marginStart="40dp"
             android:layout_marginEnd="40dp"
             android:layout_marginBottom="20dp"
             android:orientation="vertical"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:id="@+id/parent_days"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"></LinearLayout>
+            </ScrollView>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/menu_hours"
+            android:layout_width="match_parent"
+            android:layout_height="140dp"
+            android:layout_marginStart="40dp"
+            android:layout_marginEnd="40dp"
+            android:layout_marginBottom="20dp"
+            android:orientation="vertical"
+            android:visibility="visible"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent">
@@ -63,6 +90,22 @@
                     android:text="Monday ▼"
                     android:textColor="@color/white"
                     android:textSize="20sp" />
+
+                <ImageView
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    app:srcCompat="@drawable/temp_icon"
+                    />
+                <ImageView
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    app:srcCompat="@drawable/sun_icon"
+                    />
+                <ImageView
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    app:srcCompat="@drawable/rain_icon"
+                    />
             </LinearLayout>
 
             <LinearLayout
@@ -73,17 +116,16 @@
 
             </LinearLayout>
 
-            <ScrollView
+            <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
-
                 <LinearLayout
-                    android:id="@+id/parent_day"
+                    android:id="@+id/parent_hours"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:orientation="horizontal"></LinearLayout>
-            </ScrollView>
+            </HorizontalScrollView>
         </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
