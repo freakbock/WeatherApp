@@ -4,6 +4,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -11,6 +13,8 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Picture;
 import android.graphics.drawable.PictureDrawable;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -60,6 +64,8 @@ public class MainActivity extends AppCompatActivity {
     LinearLayout menu_days;
 
     boolean isHour = false;
+
+    private NetworkChangeReceiver networkChangeReceiver;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -80,7 +86,23 @@ public class MainActivity extends AppCompatActivity {
                 prefs.getString("condition", ""),
                 prefs.getString("daytime", ""));
 
+        networkChangeReceiver = new NetworkChangeReceiver();
         LoadData();
+    }
+
+    @Override
+    protected void onResume(){
+        super.onResume();
+
+        IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+        registerReceiver(networkChangeReceiver, filter);
+    }
+
+    @Override
+    protected  void onPause(){
+        super.onPause();
+
+        unregisterReceiver(networkChangeReceiver);
     }
 
     @Override
@@ -121,54 +143,86 @@ public class MainActivity extends AppCompatActivity {
                         LoadDays();
                     }
 
+                    private boolean isWeatherDayDataLoaded = false;
+                    private boolean isWeatherHourDataLoaded = false;
                     @Override
                     public void onFailure(String errorMessage) {
 
                         if(getSharedPreferences("myprefs", MODE_PRIVATE).contains("temp")){
+
                             WeatherDataSource wds = new WeatherDataSource(MainActivity.this);
-                            Cursor cursorDay = wds.getAllWeatherDayData();
-                            if(cursorDay.moveToFirst())
-                            {
-                                do{
-                                    WeatherOfDay item = new WeatherOfDay(
-                                            cursorDay.getString(1),
-                                            cursorDay.getInt(2),
-                                            cursorDay.getString(3)
-                                    );
+                            wds.getAllWeatherDayData(new WeatherDataSource.DatabaseCallback() {
+                                @Override
+                                public void onTaskComplete(Long result) {
 
-                                    weatherDays.add(item);
                                 }
-                                while(cursorDay.moveToNext());
-                            }
 
-                            Cursor cursorHour = wds.getAllWeatherHourData();
-                            if(cursorHour.moveToFirst())
-                            {
-                                do{
-                                    WeatherOfHour item = new WeatherOfHour(
-                                            cursorHour.getString(1),
-                                            cursorHour.getInt(2),
-                                            cursorHour.getInt(3),
-                                            cursorHour.getString(4)
-                                    );
+                                @Override
+                                public void onCursorLoaded(Cursor cursor) {
+                                    Cursor cursorDay = cursor;
 
-                                    weatherHours.add(item);
+                                    if(cursorDay.moveToFirst())
+                                    {
+                                        do{
+                                            WeatherOfDay item = new WeatherOfDay(
+                                                    cursorDay.getString(1),
+                                                    cursorDay.getInt(2),
+                                                    cursorDay.getString(3)
+                                            );
+
+                                            weatherDays.add(item);
+                                        }
+                                        while(cursorDay.moveToNext());
+                                    }
+                                    isWeatherDayDataLoaded = true;
+                                    if(isWeatherHourDataLoaded){
+                                        LoadDays();
+
+                                        isWeatherDayDataLoaded = false;
+                                        isWeatherHourDataLoaded = false;
+                                    }
                                 }
-                                while(cursorHour.moveToNext());
-                            }
+                            });
+                            wds.getAllWeatherHourData(new WeatherDataSource.DatabaseCallback() {
+                                @Override
+                                public void onTaskComplete(Long result) {
 
-                            SharedPreferences prefs = getSharedPreferences("myprefs", MODE_PRIVATE);
-                            LoadBackgroundData(
-                                    prefs.getInt("temp", 0),
-                                    prefs.getString("condition", ""),
-                                    prefs.getString("daytime", ""));
-                            LoadDays();
+                                }
+
+                                @Override
+                                public void onCursorLoaded(Cursor cursor) {
+                                    Cursor cursorHour = cursor;
+                                    if(cursorHour.moveToFirst())
+                                    {
+                                        do{
+                                            WeatherOfHour item = new WeatherOfHour(
+                                                    cursorHour.getString(1),
+                                                    cursorHour.getInt(2),
+                                                    cursorHour.getInt(3),
+                                                    cursorHour.getString(4)
+                                            );
+
+                                            weatherHours.add(item);
+                                        }
+                                        while(cursorHour.moveToNext());
+                                    }
+
+                                    isWeatherHourDataLoaded = true;
+                                    if(isWeatherDayDataLoaded){
+                                        LoadDays();
+
+                                        isWeatherDayDataLoaded = false;
+                                        isWeatherHourDataLoaded = false;
+                                    }
+                                }
+                            });
 
                             Toast.makeText(MainActivity.this, "Не удалось подключиться. Отображены старые данные", Toast.LENGTH_SHORT).show();
                         }
                         else{
                             Toast.makeText(MainActivity.this, "Не удалось выполнить запрос", Toast.LENGTH_SHORT).show();
                         }
+
 
                     }
                 });
