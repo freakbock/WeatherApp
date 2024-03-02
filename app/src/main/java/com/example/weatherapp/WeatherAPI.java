@@ -1,5 +1,6 @@
 package com.example.weatherapp;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -63,7 +64,6 @@ public class WeatherAPI {
                             JSONObject dataForDay = forecasts.getJSONObject(i);
                             String date = dataForDay.getString("date");
                             String dayCondition = dataForDay.getJSONObject("parts").getJSONObject("day").getString("condition");
-                            String icon = dataForDay.getJSONObject("parts").getJSONObject("day").getString("icon");
 
                             JSONObject parts = dataForDay.getJSONObject("parts");
                             JSONObject night = parts.getJSONObject("night");
@@ -90,7 +90,7 @@ public class WeatherAPI {
                             }
 
 
-                            WeatherOfDay weatherOfDay = new WeatherOfDay(date, temp_avg, dayCondition, icon);
+                            WeatherOfDay weatherOfDay = new WeatherOfDay(date, temp_avg, dayCondition);
                             MainActivity.weatherDays.add(weatherOfDay);
 
                             callback.onSuccess(temp,condition, daytime);

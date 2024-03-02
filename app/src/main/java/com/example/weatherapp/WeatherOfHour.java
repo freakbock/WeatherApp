@@ -1,7 +1,6 @@
 package com.example.weatherapp;
 
 public class WeatherOfHour {
-    public int weather_id;
     public String date;
     public int hour;
     public int temp;

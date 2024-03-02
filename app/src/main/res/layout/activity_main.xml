@@ -87,6 +87,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
+                    android:onClick="BackToDays"
                     android:text="Monday ▼"
                     android:textColor="@color/white"
                     android:textSize="20sp" />
@@ -94,18 +95,17 @@
                 <ImageView
                     android:layout_width="30dp"
                     android:layout_height="30dp"
-                    app:srcCompat="@drawable/temp_icon"
-                    />
+                    app:srcCompat="@drawable/temp_icon" />
+
                 <ImageView
                     android:layout_width="30dp"
                     android:layout_height="30dp"
-                    app:srcCompat="@drawable/sun_icon"
-                    />
+                    app:srcCompat="@drawable/sun_icon" />
+
                 <ImageView
                     android:layout_width="30dp"
                     android:layout_height="30dp"
-                    app:srcCompat="@drawable/rain_icon"
-                    />
+                    app:srcCompat="@drawable/rain_icon" />
             </LinearLayout>
 
             <LinearLayout
